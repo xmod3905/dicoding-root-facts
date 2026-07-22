@@ -1,36 +1,36 @@
-import daStyle from 'eslint-config-dicodingacademy';
-import pluginReact from 'eslint-plugin-react';
-
-export default [
-  daStyle,
-  {
-    files: ['**/*.{js,jsx}'],
-    plugins: {
-      react: pluginReact,
-    },
-    languageOptions: {
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
-        babelOptions: {
-          presets: ['@babel/preset-react'],
-        },
-      },
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-    ignores: ['dist', 'node_modules'],
-    rules: {
-      ...pluginReact.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-      'camelcase': 'off',
-    },
+module.exports = {
+  root: true,
+  env: {
+    browser: true,
+    es2021: true,
+    node: true
   },
-];
+  extends: [
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'plugin:react-hooks/recommended'
+  ],
+  ignorePatterns: ['dist', 'build', 'node_modules'],
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true
+    }
+  },
+  settings: {
+    react: {
+      version: 'detect'
+    }
+  },
+  rules: {
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+    'react/prop-types': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+    'semi': ['error', 'always'],
+    'quotes': ['error', 'single', { 'avoidEscape': true }]
+  }
+};

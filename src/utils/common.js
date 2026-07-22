@@ -1,7 +1,7 @@
 import { APP_CONFIG, CAMERA_CONFIG, TENSORFLOW_CONFIG } from './config.js';
 
 export const logError = (context, error) => {
-  console.error(`❌ ${context}:`, error);
+  console.error(`Error: ${context}:`, error);
 };
 
 export const createPerformanceStats = () => ({
@@ -95,18 +95,16 @@ export const createModelProgressCallback = (onProgress, throttleMs = 200) => {
   let lastCallTime = 0;
 
   return (progress) => {
-    // Abaikan jika bukan event progress atau tidak ada file
+
     if (progress.status !== 'progress' || !progress.file) return;
 
-    // Filter hanya file encoder dan decoder
     const isEncoder = progress.file.includes('encoder');
     const isDecoder = progress.file.includes('decoder');
     if (!isEncoder && !isDecoder) return;
 
-    // Update progress untuk file ini
     fileProgress[progress.file] = Math.round(progress.progress);
 
-    // Hitung rata-rata progress untuk encoder dan decoder
+
     const encoderFiles = Object.entries(fileProgress)
       .filter(([file]) => file.includes('encoder'));
     const decoderFiles = Object.entries(fileProgress)
@@ -122,7 +120,6 @@ export const createModelProgressCallback = (onProgress, throttleMs = 200) => {
     const decoder = average(decoderFiles);
     const message = `Mengunduh model AI... Encoder: ${encoder}% | Decoder: ${decoder}%`;
 
-    // Throttling: hanya panggil callback jika ada perubahan dan interval terpenuhi
     if (message === lastMessage) return;
 
     const now = Date.now();

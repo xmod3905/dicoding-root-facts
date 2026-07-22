@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { Camera, Mic, ScanLine } from 'lucide-react';
 import { TONE_CONFIG } from '../utils/config';
 
-function CameraSection({
+const CameraSection = memo(({
   isRunning,
   onToggleCamera,
   onToneChange,
@@ -10,46 +10,66 @@ function CameraSection({
   modelStatus,
   error,
   currentTone
-}) {
+}) => {
   const [fps, setFps] = useState(30);
-  const [cameraType, setCameraType] = useState('default');
+  const [cameraList, setCameraList] = useState([]);
+  const [selectedCameraId, setSelectedCameraId] = useState('default');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  useEffect(() => {
-    if (services.camera) {
-      if (videoRef.current && !services.camera.video) {
-        services.camera.setVideoElement(videoRef.current);
-      }
-      if (canvasRef.current && !services.camera.canvas) {
-        services.camera.setCanvasElement(canvasRef.current);
-      }
-    }
-  });
 
   useEffect(() => {
-    if (services.camera) {
+    const cameraService = services?.camera;
+    if (cameraService) {
+      if (videoRef.current && !cameraService.video) {
+        cameraService.setVideoElement(videoRef.current);
+      }
+      if (canvasRef.current && !cameraService.canvas) {
+        cameraService.setCanvasElement(canvasRef.current);
+      }
+    }
+  }, [services?.camera]);
+
+
+  useEffect(() => {
+    let isMounted = true;
+    if (services?.camera?.loadCameras) {
+      services.camera.loadCameras().then((devices) => {
+        if (isMounted && devices && devices.length > 0) {
+          setCameraList(devices);
+        }
+      }).catch(() => {
+
+      });
+    }
+    return () => { isMounted = false; };
+  }, [services?.camera]);
+
+
+  useEffect(() => {
+    if (services?.camera) {
       services.camera.setFPS(fps);
     }
-  }, [fps, services.camera]);
+  }, [fps, services?.camera]);
 
-  const handleCameraChange = (newCameraType) => {
-    setCameraType(newCameraType);
-    if (services.camera && services.camera.isActive()) {
-      services.camera.startCamera();
+  const handleCameraChange = useCallback((e) => {
+    const deviceId = e.target.value;
+    setSelectedCameraId(deviceId);
+    if (services?.camera && services.camera.isActive()) {
+      services.camera.startCamera(deviceId);
     }
-  };
+  }, [services?.camera]);
 
-  const handleFpsChange = (newFps) => {
-    setFps(Number(newFps));
-  };
+  const handleFpsChange = useCallback((e) => {
+    setFps(Number(e.target.value));
+  }, []);
 
-  const handleToneChange = (e) => {
+  const handleToneChange = useCallback((e) => {
     const newTone = e.target.value;
     if (onToneChange) {
       onToneChange(newTone);
     }
-  };
+  }, [onToneChange]);
 
   const isModelReady = modelStatus === 'Model AI Siap';
   const buttonDisabled = !isModelReady;
@@ -108,12 +128,22 @@ function CameraSection({
             <Camera size={16} />
             <select
               id="camera-select"
-              value={cameraType}
-              onChange={(e) => handleCameraChange(e.target.value)}
+              value={selectedCameraId}
+              onChange={handleCameraChange}
               disabled={isRunning}
             >
-              <option value="default">Belakang</option>
-              <option value="front">Depan</option>
+              {cameraList.length > 0 ? (
+                cameraList.map((cam) => (
+                  <option key={cam.deviceId} value={cam.deviceId}>
+                    {cam.label}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="default">Belakang</option>
+                  <option value="front">Depan</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -126,7 +156,7 @@ function CameraSection({
               max="60"
               step="15"
               value={fps}
-              onChange={(e) => handleFpsChange(e.target.value)}
+              onChange={handleFpsChange}
               disabled={isRunning}
             />
           </div>
@@ -150,6 +180,7 @@ function CameraSection({
       </div>
     </section>
   );
-}
+});
 
+CameraSection.displayName = 'CameraSection';
 export default CameraSection;

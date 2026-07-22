@@ -39,7 +39,6 @@ export class CameraService {
         deviceId: camera.deviceId,
         label: camera.label || `Kamera ${index + 1}`
       }));
-
     } catch (error) {
       logError('Gagal memuat kamera', error);
       throw new Error(`Akses kamera gagal: ${error.message}`);
@@ -60,7 +59,6 @@ export class CameraService {
       }
 
       return true;
-
     } catch (error) {
       logError('Gagal memulai kamera', error);
       const errorMessage = getCameraErrorMessage(error);
@@ -90,14 +88,16 @@ export class CameraService {
   }
 
   isActive() {
-    return this.stream && this.stream.active;
+    return !!(this.stream && this.stream.active);
   }
 
   isReady() {
-    return this.isActive() &&
+    return !!(
+      this.isActive() &&
       this.video &&
       this.video.readyState >= 2 &&
-      !this.video.paused;
+      !this.video.paused
+    );
   }
 
   captureFrame() {

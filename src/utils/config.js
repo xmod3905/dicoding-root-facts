@@ -12,14 +12,14 @@ export const TENSORFLOW_CONFIG = {
   inputSize: [224, 224],
   normalizationFactor: 255.0,
   confidenceThresholds: {
-    excellent: 80,
-    good: 60
+    excellent: 85,
+    good: 70
   }
 };
 
 export const TRANSFORMERS_CONFIG = {
   modelName: 'Xenova/LaMini-Flan-T5-77M',
-  maxTokens: 80,
+  maxTokens: 125,
   temperature: 0.8,
   topP: 0.9,
   generationDelay: 500,

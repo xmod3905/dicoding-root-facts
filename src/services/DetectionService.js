@@ -19,6 +19,10 @@ export class DetectionService {
     this.performanceStats = createPerformanceStats();
   }
 
+  /**
+   * Memuat model TensorFlow.js dan metadata.
+   * Mendukung precaching dari Service Worker/Cache Storage untuk mode offline.
+   */
   async loadModel() {
     try {
       const backend = isWebGPUSupported() ? 'webgpu' : 'webgl';
@@ -29,13 +33,15 @@ export class DetectionService {
       const backendName = tf.getBackend();
 
       const [metadata, model] = await Promise.all([
-        fetch(this.config.metadataPath).then(async (r) => {
-          if (!r.ok) {
-            throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+        fetch(this.config.metadataPath, { cache: 'force-cache' }).then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
-          return r.json();
+          return response.json();
         }),
-        tf.loadLayersModel(this.config.modelPath)
+        tf.loadLayersModel(this.config.modelPath, {
+          requestInit: { cache: 'force-cache' }
+        })
       ]);
 
       if (!validateModelMetadata(metadata)) {
@@ -52,13 +58,16 @@ export class DetectionService {
         version: metadata.version || '1.0.0',
         backend: backendName
       };
-
     } catch (error) {
       logError('Gagal memuat model', error);
       throw new Error(`Gagal memuat model: ${error.message}`);
     }
   }
 
+  /**
+   * Menjalankan prediksi gambar menggunakan model yang dimuat.
+   * @param {HTMLVideoElement | HTMLCanvasElement | HTMLImageElement} imageElement
+   */
   async predict(imageElement) {
     if (!this.model) {
       throw new Error('Model belum dimuat. Panggil loadModel() terlebih dahulu.');
@@ -74,7 +83,8 @@ export class DetectionService {
 
     try {
       tensor = tf.tidy(() => {
-        return tf.browser.fromPixels(imageElement)
+        return tf.browser
+          .fromPixels(imageElement)
           .resizeBilinear(this.config.inputSize)
           .div(this.config.normalizationFactor)
           .expandDims(0);
@@ -94,14 +104,16 @@ export class DetectionService {
       const isValid = confidence >= this.config.confidenceThresholds.excellent;
 
       const result = {
-        className: className,
-        confidence: confidence,
+        className,
+        confidence,
         score: values[maxIndex],
-        isValid: isValid,
-        allPredictions: this.labels.map((label, index) => ({
-          className: label,
-          confidence: Math.round(values[index] * 100)
-        })).sort((a, b) => b.confidence - a.confidence),
+        isValid,
+        allPredictions: this.labels
+          .map((label, index) => ({
+            className: label,
+            confidence: Math.round(values[index] * 100)
+          }))
+          .sort((a, b) => b.confidence - a.confidence),
 
         performance: createPerformanceResult(
           predictionTime,
@@ -114,7 +126,6 @@ export class DetectionService {
       logPerformance(tf.getBackend(), predictionTime, this.performanceStats.averageTime);
 
       return result;
-
     } catch (error) {
       logError('Kesalahan prediksi', error);
       throw new Error(`Prediksi gagal: ${error.message}`);

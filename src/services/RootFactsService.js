@@ -1,3 +1,4 @@
+import { pipeline, env } from '@huggingface/transformers';
 import { TRANSFORMERS_CONFIG, TONE_CONFIG } from '../utils/config.js';
 import {
   createDelay,
@@ -9,9 +10,8 @@ import {
   createModelProgressCallback,
   createPerformanceStats
 } from '../utils/common.js';
-import { pipeline, env } from '@huggingface/transformers';
 
-env.allowLocalModels = false;
+env.allowLocalModels = true;
 env.useBrowserCache = true;
 
 export class RootFactsService {
@@ -26,6 +26,9 @@ export class RootFactsService {
     this.onProgress = onProgress;
   }
 
+  /**
+   * Memuat model Transformers.js (text2text-generation / ONNX).
+   */
   async loadModel() {
     try {
       const device = isWebGPUSupported() ? 'webgpu' : 'wasm';
@@ -36,7 +39,7 @@ export class RootFactsService {
         {
           dtype: 'q4',
           device,
-          progress_callback: createModelProgressCallback(this.onProgress),
+          progress_callback: createModelProgressCallback(this.onProgress)
         }
       );
 
@@ -48,7 +51,6 @@ export class RootFactsService {
         model: this.config.modelName,
         backend: this.currentBackend
       };
-
     } catch (error) {
       logError('Kesalahan memuat model Transformers.js', error);
       throw new Error(`Gagal memuat model generasi konten: ${error.message}`);
@@ -103,7 +105,6 @@ export class RootFactsService {
           this.performanceStats.operations
         )
       };
-
     } catch (error) {
       logError('Kesalahan menghasilkan konten fakta menarik', error);
       throw new Error(`Gagal menghasilkan informasi fakta menarik: ${error.message}`);
@@ -117,7 +118,7 @@ export class RootFactsService {
       normal: `Tell me a fun and interesting fact about ${vegetableName} vegetable. Keep it under 2 sentences.`,
       funny: `Tell me a funny joke or humorous fact about ${vegetableName} vegetable. Make it witty. Under 2 sentences.`,
       professional: `Provide a scientific or nutritional fact about ${vegetableName} vegetable. Be precise. Under 2 sentences.`,
-      casual: `Share a chill, interesting fact about ${vegetableName} vegetable. Keep it casual and friendly. Under 2 sentences.`,
+      casual: `Share a chill, interesting fact about ${vegetableName} vegetable. Keep it casual and friendly. Under 2 sentences.`
     };
 
     return tonePrompts[this.currentTone] || tonePrompts.normal;
