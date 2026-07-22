@@ -1,0 +1,2 @@
+APP_URL=https://root-facts.xmod3905.my.id/
+GITHUB_URL=https://github.com/xmod3905/dicoding-root-facts
