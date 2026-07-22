@@ -50,13 +50,13 @@ export class DetectionService {
 
       this.labels = metadata.labels;
       this.model = model;
-
+      console.log(backendName);
       return {
         success: true,
         labels: this.labels,
         modelName: metadata.modelName || 'Tidak Diketahui',
         version: metadata.version || '1.0.0',
-        backend: backendName
+        backend: backendName,
       };
     } catch (error) {
       logError('Gagal memuat model', error);

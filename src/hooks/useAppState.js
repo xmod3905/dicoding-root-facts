@@ -1,4 +1,4 @@
-import { useReducer, useMemo, useCallback } from 'react';
+import { useReducer, useMemo } from 'react';
 
 const initialState = {
   appState: 'idle',
@@ -7,6 +7,7 @@ const initialState = {
   detectionResult: null,
   funFactData: null,
   error: null,
+  warning: null,
   services: {
     detector: null,
     camera: null,
@@ -22,6 +23,7 @@ const ActionTypes = {
   SET_DETECTION_RESULT: 'SET_DETECTION_RESULT',
   SET_FUN_FACT_DATA: 'SET_FUN_FACT_DATA',
   SET_ERROR: 'SET_ERROR',
+  SET_WARNING: 'SET_WARNING', 
   RESET_RESULTS: 'RESET_RESULTS',
 };
 
@@ -51,6 +53,9 @@ function appReducer(state, action) {
     case ActionTypes.SET_ERROR:
       return { ...state, error: action.payload };
 
+    case ActionTypes.SET_WARNING:
+      return { ...state, warning: action.payload };
+
     case ActionTypes.RESET_RESULTS:
       return {
         ...state,
@@ -58,6 +63,7 @@ function appReducer(state, action) {
         detectionResult: null,
         funFactData: null,
         error: null,
+        warning: null,
       };
 
     default:
@@ -90,6 +96,10 @@ export function useAppState() {
 
       setError: (error) =>
         dispatch({ type: ActionTypes.SET_ERROR, payload: error }),
+
+
+      setWarning: (warning) =>
+        dispatch({ type: ActionTypes.SET_WARNING, payload: warning }),
 
       resetResults: () => dispatch({ type: ActionTypes.RESET_RESULTS }),
     }),

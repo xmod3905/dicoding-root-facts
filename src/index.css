@@ -654,7 +654,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
   animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-
 .popup-icon {
   width: 56px;
   height: 56px;
@@ -699,6 +698,47 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .popup-button:hover {
   background-color: #dc2626;
+}
+
+
+/* Styling Warna Ikon Berdasarkan Varian */
+.popup-icon-error {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.popup-icon-warning {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.popup-icon-info {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.popup-button-error {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+.popup-button-error:hover {
+  background-color: #dc2626;
+}
+
+.popup-button-warning {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+.popup-button-warning:hover {
+  background-color: #d97706;
+}
+
+.popup-button-info {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+.popup-button-info:hover {
+  background-color: #0369a1;
 }
 
 

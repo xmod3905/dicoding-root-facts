@@ -3,7 +3,7 @@ import Header from './components/Header';
 import CameraSection from './components/CameraSection';
 import InfoPanel from './components/InfoPanel';
 import Footer from './components/Footer';
-import ErrorPopUp from './components/ErrorPopUp';
+import NotificationModal from './components/NotificationModal';
 
 import { DetectionService } from './services/DetectionService';
 import { CameraService } from './services/CameraService';
@@ -12,17 +12,19 @@ import { APP_CONFIG } from './utils/config';
 import { useAppState } from './hooks/useAppState';
 import { useDetectionLoop } from './hooks/useDetectionLoop';
 import { createDelay } from './utils/common';
+
 function App() {
   const { state, actions } = useAppState();
   const [currentTone, setCurrentTone] = useState('normal');
 
-  // Integrasi custom hook untuk memisahkan logika loop deteksi
+
+  const [activeBackend, setActiveBackend] = useState(null);
+
   const { startLoop, stopLoop, isRunningRef } = useDetectionLoop({
     services: state.services,
     actions,
   });
 
-  // 1. Inisialisasi AI Models & Services
   useEffect(() => {
     let isSubscribed = true;
 
@@ -32,7 +34,20 @@ function App() {
         actions.setError(null);
 
         const detector = new DetectionService();
-        await detector.loadModel();
+        
+        const detectorResult = await detector.loadModel();
+
+        if (isSubscribed) {
+
+          setActiveBackend(detectorResult.backend);
+
+
+          if (detectorResult.backend !== 'webgpu') {
+            actions.setWarning(
+              'WebGPU tidak didukung di perangkat/browser Anda. Aplikasi berjalan menggunakan fallback (WebGL/WASM).'
+            );
+          }
+        }
 
         const camera = new CameraService();
         let generator = null;
@@ -43,7 +58,7 @@ function App() {
           });
           await generator.loadModel();
         } catch (error) {
-          console.warn('⚠️ Layanan fakta menarik gagal dimuat (mode offline?)', error);
+          console.warn('Layanan fakta menarik gagal dimuat (mode offline?)', error);
         }
 
         if (isSubscribed) {
@@ -63,7 +78,7 @@ function App() {
     return () => {
       isSubscribed = false;
     };
-  }, []);
+  }, [actions]);
 
   useEffect(() => {
     return () => {
@@ -119,7 +134,6 @@ function App() {
     }
   }, [state.services.detector, actions, startCamera, stopCamera, isRunningRef]);
 
-  // 4. Copy to Clipboard Handler
   const handleCopyFact = useCallback(() => {
     if (state.funFactData && state.funFactData !== 'error') {
       navigator.clipboard
@@ -132,9 +146,15 @@ function App() {
     }
   }, [state.funFactData, actions]);
 
+  const activeNotification = state.error
+    ? { message: state.error, variant: 'error', onClose: () => actions.setError(null) }
+    : state.warning
+    ? { message: state.warning, variant: 'warning', onClose: () => actions.setWarning(null) }
+    : null;
+
   return (
     <div className="app-container">
-      <Header modelStatus={state.modelStatus} />
+      <Header modelStatus={state.modelStatus} activeBackend={activeBackend} />
 
       <main className="main-content">
         <CameraSection
@@ -158,8 +178,12 @@ function App() {
 
       <Footer authorName="Muhammad Iqbal" githubUrl="https://github.com/xmod3905" />
 
-      {state.error && (
-        <ErrorPopUp message={state.error} onClose={() => actions.setError(null)} />
+      {activeNotification && (
+        <NotificationModal
+          variant={activeNotification.variant}
+          message={activeNotification.message}
+          onClose={activeNotification.onClose}
+        />
       )}
     </div>
   );
