@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -21,7 +21,7 @@ jobs:
         run: bun install --ignore-scripts
 
       - name: Cache build output
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ./dist
           key: ${{ runner.os }}-web-${{ hashFiles('**/package.json') }}
@@ -37,4 +37,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "latest"
-          command: pages deploy ./dist --project-name=dicoding-root-facts --branch=main
+          command: pages deploy ./dist --project-name=root-facts-xmod3905 --branch=main
