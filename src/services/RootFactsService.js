@@ -13,6 +13,7 @@ import {
 
 env.allowLocalModels = true;
 env.useBrowserCache = true;
+env.allowRemoteModels = true;
 
 export class RootFactsService {
   constructor(onProgress = null) {
