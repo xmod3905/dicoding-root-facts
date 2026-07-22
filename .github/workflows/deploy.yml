@@ -42,4 +42,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "latest"
-          command: pages deploy ./dist --project-name=dicoding-root-facts --branch=master
+          command: pages deploy ./dist --project-name=dicoding-root-facts --branch=main
