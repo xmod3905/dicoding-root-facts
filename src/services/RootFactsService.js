@@ -11,7 +11,7 @@ import {
   createPerformanceStats
 } from '../utils/common.js';
 
-env.allowLocalModels = true;
+env.allowLocalModels = false;
 env.useBrowserCache = true;
 env.allowRemoteModels = true;
 
@@ -33,7 +33,6 @@ export class RootFactsService {
   async loadModel() {
     try {
       const device = isWebGPUSupported() ? 'webgpu' : 'wasm';
-
       this.generator = await pipeline(
         'text2text-generation',
         this.config.modelName,
